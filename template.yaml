@@ -1,0 +1,191 @@
+- sensor:
+    # sensor som beregner om det er en av de 4 billigste timene nå. (Trenger egt ikke da vi har sensoren under)
+    - name: "Billigste fire timer?"
+      state: >
+        {# Kode som sjekker om nåtidspunktet inngår i start- og sluttidene til de fire billigste timene#}
+
+        {% set ns1 = namespace() %}
+        {% set l = state_attr('sensor.nordpool','raw_today')| sort(attribute='value') %}
+        {% set now = as_timestamp(now()) %}
+            {% for i in range(4) %}
+                {% set start = as_timestamp(l[i].start) %}
+                {% set end = as_timestamp(l[i].end) %}
+                {% if now >= start and now <= end %}
+                    {% set ns1.found = true %}
+                    {% break %}
+                {% else %}
+                    {% set ns1.found = false %}
+                {% endif %}
+            {% endfor %}
+          {{ ns1.found }}
+
+    # sensor som beregner antall timer til neste gang det er en av de 4 billigste timene
+    - name: "Hvor mange timer til neste billigste time"
+      state: >
+        {# bruker namespace() for å senere kunne hente verdi ns ut av andre scopes #}
+
+        {% set ns2 = namespace() %} 
+        {% set billigste_time_nå = states('binary_sensor.billigste_fire_timer') %}
+
+        {# Sorterer lista med strømpriser for i dag først. Billigste time øverst #}
+        {% set ns2.l_pris_sortert = state_attr('sensor.nordpool','raw_today')| sort(attribute='value') %}
+        {% set ns2.l_pris_sortert = ns2.l_pris_sortert[:4]%}
+        {# Om strømprisene for i morgen har kommet inn: #}
+        {% if state_attr('sensor.nordpool', 'tomorrow_valid') == true %}
+            {# Sorterer lista med strømpriser for i morgen #}
+            {% set l_pris_imorgen = state_attr('sensor.nordpool', 'raw_tomorrow')| sort(attribute='value') %}
+
+        {# Legger sammen de fire øverste elementene fra de to listene for å få alle verdiene i en og samme liste #}
+        {# Sorterer lista ut ifra pris igjen #}
+
+            {% set ns2.l_pris_sortert = (ns2.l_pris_sortert + l_pris_imorgen[:4]) | sort(attribute='value')%}
+
+
+        {% endif %}   
+        {% set now = as_timestamp(now())%}
+        {% set ns2.nærmeste_time = float('inf') %}
+
+        {# Om sensoren billigste_fire_timer er true så er ant. timer lik 0 #}
+
+        {% if billigste_time_nå == 'on' %}
+            {% set ns2.nærmeste_time = 0 %}
+            {{ ns2.nærmeste_time | float }}
+        {% else %}
+        {# Kjører løkke som filtrerer ut den timen som er nærmest nå (now()) #}
+
+            {% for i in range(ns2.l_pris_sortert | length)%}
+                {% set start = as_timestamp(ns2.l_pris_sortert[i].start) %}
+                {% if start - now < ns2.nærmeste_time and start > now %}
+                    {% set ns2.nærmeste_time = start - now%}
+                {% endif %}
+            {% endfor %}
+            
+            {# Skriver ut i timeformat#}
+            {% if ns2.nærmeste_time != float('inf')%}
+              {{ ns2.nærmeste_time|timestamp_custom('%H') }}
+            {% else %}
+              {{ -1 }}
+            {% endif %}
+        {% endif %}
+      unit_of_measurement: "h"
+
+    - name: "Remaining energy budget"
+      state: "{{ states('input_number.remaining_energy_budget') }}"
+      unit_of_measurement: "Wh"
+
+    - name: "Energy Sum"
+      state: "{{ states('input_number.energy_sum') }}"
+      unit_of_measurement: "Wh"
+
+    - name: "Current Check"
+      state_class: "total_increasing"
+      state: "{{ states('input_number.current_check') }}"
+
+    - name: "differanse gj.snitt og reell"
+      unit_of_measurement: "W"
+      state: >
+        {% set gjsnitt = states('input_number.na_forbruk_hvert_2_min') | float %}
+        {% set reell = states('sensor.han_sensor_electric_consumption_w') | float %}
+        {{ (gjsnitt - reell) | abs }}
+
+    # For simulasjon:
+
+    - name: "Gjenstående energibudsjett"
+      state: "{{ states('input_number.gjenstaende_energi_budsjett_simulering') }}"
+      unit_of_measurement: "Wh"
+
+    - name: "Sum energiforbruk"
+      state: "{{ states('input_number.sum_energiforbruk_simulering') }}"
+      unit_of_measurement: "Wh"
+
+    - name: "Tellevariabel simulasjon"
+      state_class: "total_increasing"
+      state: "{{ states('input_number.tellevariabel_simulering') }}"
+
+    - name: "Effektgrense"
+      state: "{{ states('input_number.neste_maksgrense_simulering') }}"
+      unit_of_measurement: "W"
+
+    #For simulasjon (Tar ikke input_number.na_forbruk_hvert_2_min i betraktning):
+    - name: "Effektforbruk simulerte enheter"
+      unit_of_measurement: "W"
+      state: >
+        {% set ns = namespace() %}
+        {% set ns.power = 0 %}
+        {% if states('input_boolean.varmekabler_paa') == 'on' %}
+            {% set ns.power = ns.power + 1500 %}
+        {%endif%}
+        {% if states('input_boolean.varmtvannstank_paa') == 'on' %}
+            {% set ns.power = ns.power + 2000 %}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_1_paa') == 'on'%}
+            {% set ns.power = ns.power + 1000%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_2_paa') == 'on'%}
+            {% set ns.power = ns.power + 500%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_3_paa') == 'on'%}
+            {% set ns.power = ns.power + 500%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_4_paa') == 'on'%}
+            {% set ns.power = ns.power + 300%}
+        {%endif%}
+        {% if states('input_boolean.elbil_lader_paa') == 'on'%}
+            {% set ns.power = ns.power + 7000%}
+        {%endif%}
+        {{ns.power}}
+
+      # For simulering (Tar input_number.na_forbruk_hvert_2_min i betraktning)
+    - name: "Nåværende effektforbruk"
+      unit_of_measurement: "W"
+      state: >
+        {% set ns = namespace() %}
+        {% set ns.power = states('input_number.na_forbruk_hvert_2_min') | float %}
+        {% if states('input_boolean.varmekabler_paa') == 'on' %}
+            {% set ns.power = ns.power + 1500 %}
+        {%endif%}
+        {% if states('input_boolean.varmtvannstank_paa') == 'on' %}
+            {% set ns.power = ns.power + 2000 %}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_1_paa') == 'on'%}
+            {% set ns.power = ns.power + 1000%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_2_paa') == 'on'%}
+            {% set ns.power = ns.power + 500%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_3_paa') == 'on'%}
+            {% set ns.power = ns.power + 500%}
+        {%endif%}
+        {% if states('input_boolean.varmeovn_4_paa') == 'on'%}
+            {% set ns.power = ns.power + 300%}
+        {%endif%}
+        {% if states('input_boolean.elbil_lader_paa') == 'on'%}
+            {% set ns.power = ns.power + 7000%}
+        {%endif%}
+        {{ns.power}}
+
+      # Bruker velger antall timer som elbilen skal lade om natta. Laderen skrus på i løpet av x billigste timer.
+    - name: "Elbil_regulering"
+      state: >
+        {% set ns3 = namespace()%} 
+        {% set antall_timer = int(states('input_number.antall_timer_elbil'))%}
+        {% set list = state_attr('sensor.nordpool','raw_today')%}
+        {# Lista er sortert ut ifra klokkeslett fra før#}
+        {% set list = list[:6] | sort(attribute = 'value') %}
+        {% set list = list[:antall_timer]%}
+        {% set now = as_timestamp(now()) %}
+        {% for i in range(antall_timer) %}
+          {% set start = as_timestamp(list[i].start) %}
+          {% set end = as_timestamp(list[i].end) %}
+          {% if now >= start and now <= end %}
+              {% set ns3.found = true %}
+              {% break %}
+          {% else %}
+              {% set ns3.found = false %}
+          {% endif %}
+        {% endfor %}
+        {{ ns3.found }}
+
+    - name: "Control Output"
+      unit_of_measurement: "%"
+      state: "{{ states('input_number.control_output') }}"

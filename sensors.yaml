@@ -1,0 +1,15 @@
+- platform: statistics
+  name: "Gjennomsnitt 30 siste målinger W HAN-sensor"
+  entity_id: sensor.han_sensor_electric_consumption_w
+  state_characteristic: average_timeless
+  sampling_size: 33
+  max_age:
+    minutes: 5
+
+- platform: statistics
+  name: "Energiforbruk forrige time."
+  entity_id: sensor.han_sensor_electric_consumption_kwh
+  state_characteristic: change
+  sampling_size: 4
+  max_age:
+    hours: 2

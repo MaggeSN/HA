@@ -1,0 +1,391 @@
+- id: '1677938667629'
+  alias: New Automation
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 1c14776119d24c73692b683435908588
+    entity_id: binary_sensor.motion_sensor_motion_detection
+    domain: binary_sensor
+  condition: []
+  action:
+  - device_id: 14d5b34e64ef6af2763a2031a77c52a8
+    domain: mobile_app
+    type: notify
+    message: Fuck you motherfucker
+  mode: single
+- id: '1678979948690'
+  alias: skru på vannkoker
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: 82efa66a4b9207f278aaf7f83370c18c
+    entity_id: sensor.smart_implant_air_temperature_8
+    domain: sensor
+    below: 40
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - type: turn_on
+    device_id: bbf2dd57b37678cb53cbf22163212d57
+    entity_id: switch.metered_wall_plug_switch
+    domain: switch
+  mode: single
+- id: '1678980067943'
+  alias: skru av vannkoker
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: 82efa66a4b9207f278aaf7f83370c18c
+    entity_id: sensor.smart_implant_air_temperature_8
+    domain: sensor
+    above: 60
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - type: turn_off
+    device_id: bbf2dd57b37678cb53cbf22163212d57
+    entity_id: switch.metered_wall_plug_switch
+    domain: switch
+  mode: single
+- id: '1682620281661'
+  alias: Energy Control
+  description: Runs every time HAN sensor updates consumption [W]
+  trigger:
+  - platform: time_pattern
+    minutes: /2
+  condition:
+  - condition: numeric_state
+    entity_id: input_number.current_check
+    below: 29
+  action:
+  - service: python_script.energy_control
+    data: {}
+  mode: single
+- id: '1682630229148'
+  alias: Energy Control Initial
+  description: Initial automation to start the other automation
+  trigger:
+  - platform: time_pattern
+    minutes: '00'
+    seconds: '00'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id: automation.energy_control
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.energy_sum
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.current_check
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.energy_control
+  mode: single
+- id: '1683458045148'
+  alias: 'Bereder: Temp faller under 70 celcius '
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: 293f569974fe30c80ede718ca919552b
+    entity_id: sensor.smart_implant_air_temperature_8
+    domain: sensor
+    below: 70
+  condition:
+  - condition: state
+    state: 'off'
+    entity_id: input_boolean.billigste_fire_timer
+  action:
+  - service: input_number.set_value
+    data:
+      value: 8
+    target:
+      entity_id: input_number.water_heater_priority
+  - if:
+    - condition: state
+      state: 'on'
+      entity_id: binary_sensor.billigste_fire_timer
+    then:
+    - type: turn_on
+      device_id: bbf2dd57b37678cb53cbf22163212d57
+      entity_id: switch.metered_wall_plug_switch
+      domain: switch
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.varmtvannstank_paa
+    enabled: true
+  mode: single
+- id: '1683467253402'
+  alias: 'Bereder: Temp faller under 65 celsius'
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: 293f569974fe30c80ede718ca919552b
+    entity_id: sensor.smart_implant_air_temperature_8
+    domain: sensor
+    below: 65
+  condition: []
+  action:
+  - type: turn_on
+    device_id: bbf2dd57b37678cb53cbf22163212d57
+    entity_id: switch.metered_wall_plug_switch
+    domain: switch
+  - service: input_number.set_value
+    data:
+      value: 10
+    target:
+      entity_id: input_number.water_heater_priority
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.varmtvannstank_paa
+  mode: single
+- id: '1683472365215'
+  alias: Slå av varmtvannstank
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: 293f569974fe30c80ede718ca919552b
+    entity_id: sensor.smart_implant_air_temperature_8
+    domain: sensor
+    above: 75
+  condition: []
+  action:
+  - type: turn_off
+    device_id: bbf2dd57b37678cb53cbf22163212d57
+    entity_id: switch.metered_wall_plug_switch
+    domain: switch
+  mode: single
+- id: '1683546726524'
+  description: ''
+  trigger:
+  - platform: geo_location
+    source: Magnuss iPhone
+    zone: zone.home
+    event: enter
+  condition: []
+  action:
+  - device_id: 14d5b34e64ef6af2763a2031a77c52a8
+    domain: mobile_app
+    type: notify
+    message: Magnus incoming
+  mode: single
+- id: '1683556315823'
+  alias: 'Skru på enheter (SIMULERING: /3 min)'
+  description: Skru på enheter som ble avskrudd av algoritme
+  trigger:
+  - platform: time_pattern
+    minutes: /3
+    seconds: '0'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id: automation.simulering
+  - if:
+    - condition: state
+      entity_id: input_boolean.algoritme_varmekabler
+      state: 'off'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmekabler_paa
+        - input_boolean.algoritme_varmekabler
+    enabled: false
+  - if:
+    - condition: state
+      entity_id: input_boolean.algoritme_varmtvannstank
+      state: 'off'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmtvannstank_paa
+        - input_boolean.algoritme_varmtvannstank
+    enabled: false
+  - if:
+    - condition: state
+      entity_id: input_boolean.algoritme_varmeovn_1
+      state: 'off'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmeovn_1_paa
+        - input_boolean.algoritme_varmeovn_1
+    enabled: false
+  - if:
+    - condition: state
+      entity_id: input_boolean.algoritme_varmeovn_2
+      state: 'off'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmeovn_2_paa
+        - input_boolean.algoritme_varmeovn_2
+    enabled: false
+  - if:
+    - condition: state
+      state: 'off'
+      entity_id: input_boolean.algoritme_varmeovn_3
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmeovn_3_paa
+        - input_boolean.algoritme_varmeovn_3
+    enabled: false
+  - if:
+    - condition: state
+      entity_id: input_boolean.algoritme_varmeovn_4
+      state: 'off'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.varmeovn_4_paa
+        - input_boolean.algoritme_varmeovn_4
+    enabled: false
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.energy_sum_simulering
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.current_check_simulering
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+    enabled: true
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.simulering
+  mode: single
+- id: '1683574183612'
+  alias: Simulering /30 sek
+  description: Kjører scriptet for simulasjon
+  trigger:
+  - platform: time_pattern
+    seconds: /30
+  condition: []
+  action:
+  - service: python_script.energy_control_simulering
+    data: {}
+  mode: single
+- id: '1683633887633'
+  alias: Skru på enheter (SIMULERING /1 TIME)
+  description: Skru på enheter som ble avskrudd av algoritme
+  trigger:
+  - platform: time_pattern
+    seconds: '00'
+    minutes: '59'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id: automation.simulering_2_min
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.sum_energiforbruk_simulering
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.tellevariabel_simulering
+  - service: input_number.set_value
+    data:
+      value: '{{ float(states(''input_number.valgt_timegrense''))*1000 }}'
+    target:
+      entity_id: input_number.gjenstaende_energi_budsjett_simulering
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.varsel_sendt_ut
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+    enabled: true
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.simulering_2_min
+  mode: single
+- id: '1683633939157'
+  alias: Simulering /2 min
+  description: Kjører scriptet for simulasjon
+  trigger:
+  - platform: time_pattern
+    minutes: /2
+  condition: []
+  action:
+  - service: python_script.energy_control_simulering
+    data: {}
+  mode: single
+- id: '1684148860771'
+  alias: Nattlading elbil
+  description: Skrur seg på om en algoritme finner ut at det er en av x antall billigste
+    timer fra kl 00-06 på natta. Bruker velger x ved å endre input_number_antall_timer_elbil
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.elbil_regulering
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: sensor.elbil_regulering
+      state: 'True'
+    then:
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.elbil_lader_paa
+    else:
+    - service: input_boolean.turn_off
+      data: {}
+      target:
+        entity_id: input_boolean.elbil_lader_paa
+  mode: single

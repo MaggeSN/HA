@@ -1,0 +1,11 @@
+- platform: template
+  sensors:
+    varmekabler_paa:
+      friendly_name: "Varmekabler På"
+      value_template: "{{ states('input_boolean.varmekabler_paa') }}"
+    varmtvannstank_paa:
+      friendly_name: "Varmtvannsbereder På"
+      value_template: "{{ states('input_boolean.varmtvannstank_paa') }}"
+    billigste_fire_timer:
+      friendly_name: "Billigste fire timer"
+      value_template: "{{ states('sensor.billigste_fire_timer') }}"
