@@ -5,8 +5,7 @@
 !*.yaml
 !.gitignore
 !*.md
-!python_scripts
-!python_scripts/energy_control_simulering.py
+!/python_scripts/energy_control_simulering.py
 
 # Ignore folders.
 .storage
