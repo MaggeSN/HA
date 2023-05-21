@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace",
+  "data": {
+    "config": {
+      "title": "Hjem",
+      "views": [
+        {
+          "title": "Simulasjon",
+          "path": "simulasjon",
+          "badges": [],
+          "cards": [
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "input_boolean.varmekabler_paa"
+                },
+                {
+                  "entity": "input_boolean.varmtvannstank_paa"
+                },
+                {
+                  "entity": "input_boolean.varmeovn_1_paa"
+                },
+                {
+                  "entity": "input_boolean.varmeovn_2_paa"
+                },
+                {
+                  "entity": "input_boolean.varmeovn_3_paa"
+                },
+                {
+                  "entity": "input_boolean.varmeovn_4_paa"
+                },
+                {
+                  "entity": "input_boolean.elbil_lader_paa"
+                },
+                {
+                  "entity": "input_number.antall_timer_elbil",
+                  "name": "Lading elbil"
+                }
+              ],
+              "title": "Enheter",
+              "show_header_toggle": true
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "input_number.varmekabler_prioritet",
+                  "name": "Varmekabler"
+                },
+                {
+                  "entity": "input_number.varmtvannsbereder_prioritet",
+                  "name": "Bereder"
+                },
+                {
+                  "entity": "input_number.varmeovn_1_prioritet",
+                  "name": "Varmeovn stue"
+                },
+                {
+                  "entity": "input_number.varmeovn_2_prioritet",
+                  "name": "Varmeovn kjøkken"
+                },
+                {
+                  "entity": "input_number.varmeovn_3_prioritet",
+                  "name": "Varmeovn gang"
+                },
+                {
+                  "entity": "input_number.varmeovn_4_prioritet",
+                  "name": "Varmeovn oppe"
+                }
+              ],
+              "title": "Prioritet"
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "sensor.effektforbruk_simulerte_enheter",
+                  "icon": "mdi:power-plug",
+                  "secondary_info": "none"
+                },
+                {
+                  "entity": "automation.simulering",
+                  "secondary_info": "last-triggered"
+                },
+                {
+                  "entity": "automation.skru_pa_enheter_ved_timeskifte"
+                },
+                {
+                  "entity": "input_number.grense_effektforbruk_simulering"
+                }
+              ],
+              "title": "Simulering konstant verdi",
+              "show_header_toggle": true,
+              "state_color": true,
+              "footer": {
+                "type": "buttons",
+                "entities": [
+                  {
+                    "entity": "automation.simulering",
+                    "name": "Hopp 30 sekunder",
+                    "icon": "mdi:step-forward-2",
+                    "tap_action": {
+                      "action": "call-service",
+                      "service": "automation.trigger",
+                      "service_data": {
+                        "entity_id": "automation.simulering"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "automation.skru_pa_enheter_simulasjon_1_time",
+                  "name": "Simulering hver time",
+                  "secondary_info": "none"
+                },
+                {
+                  "entity": "automation.simulering_2_min",
+                  "name": "Kjør script hvert 2. min"
+                },
+                {
+                  "entity": "sensor.tellevariabel_simulasjon",
+                  "icon": "mdi:information-slab-circle",
+                  "secondary_info": "none",
+                  "name": "To minutter"
+                },
+                {
+                  "entity": "sensor.sum_energiforbruk",
+                  "secondary_info": "none",
+                  "icon": "mdi:information-slab-circle",
+                  "name": "Energiforbruk 1t"
+                },
+                {
+                  "entity": "sensor.gjenstaende_energibudsjett",
+                  "icon": "mdi:information-slab-circle",
+                  "name": "Energibudsjett 1t"
+                },
+                {
+                  "entity": "input_number.valgt_timegrense"
+                },
+                {
+                  "entity": "sensor.navaerende_effektforbruk",
+                  "name": "Effektforbruk nå",
+                  "icon": "mdi:home-lightning-bolt"
+                },
+                {
+                  "entity": "sensor.effektgrense",
+                  "name": "Grense effektforbruk",
+                  "icon": "mdi:home-off-outline"
+                }
+              ],
+              "title": "Simulering hele script",
+              "footer": {
+                "type": "buttons",
+                "entities": [
+                  {
+                    "entity": "automation.simulering_2_min",
+                    "name": "Hopp to minutter",
+                    "icon": "mdi:step-forward-2",
+                    "tap_action": {
+                      "action": "call-service",
+                      "service": "automation.trigger",
+                      "service_data": {
+                        "entity_id": "automation.simulering_2_min"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "graph_span": "24h",
+              "header": {
+                "title": "Strømpriser i morgen (kr/kWh)",
+                "show": true
+              },
+              "span": {
+                "start": "day",
+                "offset": "+1day"
+              },
+              "now": {
+                "show": false,
+                "label": "Now"
+              },
+              "series": [
+                {
+                  "entity": "sensor.nordpool",
+                  "type": "column",
+                  "data_generator": "const transformData = (start, index) => {\n  const time = new Date(start[\"start\"]).getTime();\n  const value = entity.attributes.raw_tomorrow[index][\"value\"];\n  return [time, value];\n}; return entity.attributes.raw_tomorrow.map(transformData);\n"
+                }
+              ]
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "graph_span": "24h",
+              "header": {
+                "title": "Strømpriser i dag (kr/kWh)",
+                "show": true
+              },
+              "span": {
+                "start": "day"
+              },
+              "now": {
+                "show": true,
+                "label": "Now"
+              },
+              "series": [
+                {
+                  "entity": "sensor.nordpool",
+                  "type": "column",
+                  "data_generator": "const transformData = (start, index) => {\n  const time = new Date(start[\"start\"]).getTime();\n  const value = entity.attributes.raw_today[index][\"value\"];\n  return [time, value];\n}; return entity.attributes.raw_today.map(transformData);\n"
+                }
+              ]
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "sensor.billigste_fire_timer"
+                },
+                {
+                  "entity": "sensor.hvor_mange_timer_til_neste_billigste_time"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

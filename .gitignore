@@ -7,9 +7,11 @@
 !*.md
 !python_scripts
 !python_scripts/energy_control_simulering.py
+!.storage
+!.storage/lovelace
 
 # Ignore folders.
-.storage
+
 .cloud
 .google.token
 
