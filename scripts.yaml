@@ -1,8 +1,1 @@
-new_script:
-  alias: New Script
-  sequence:
-  - device_id: 4b5d21f43e1a24c21b7e80b2465ec8b9
-    domain: zwave_js
-    entity_id: sensor.motion_sensor_illuminance_2
-    type: refresh_value
-  mode: single
+{}

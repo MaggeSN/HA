@@ -226,13 +226,15 @@ aut2 = hass.states.get('automation.skru_pa_enheter_simulasjon_1_time').state
 
 # Sjekker hvilken av de to simuleringene (automasjonene) som er på
 if aut2 == "on": # Simulering med dynamisk effektgrense
-    nåværende_effektforbruk = float(hass.states.get('sensor.navaerende_effektforbruk').state)
+    effekt = float(hass.states.get("sensor.gjennomsnitt_30_siste_malinger_w_han_sensor").state)
+    hass.states.set('input_number.na_forbruk_hvert_2_min', effekt)
+    nåværende_effektforbruk = float(hass.states.get("sensor.navaerende_effektforbruk").state)
     oppdater_energikontroll(hass, nåværende_effektforbruk)
 
 else:# elif aut1 == "on": # Simulering med selvvalgt effektgrense
     effektgrense = float(hass.states.get('input_number.grense_effektforbruk_simulering').state)
-    nåværende_effektforbruk = float(hass.states.get('sensor.effektforbruk_simulerte_enheter').state)
+    nåværende_effektforbruk = float(hass.states.get("sensor.effektforbruk_simulerte_enheter").state)
     effektregulering(hass, effektgrense, nåværende_effektforbruk)
 
-    
+
 

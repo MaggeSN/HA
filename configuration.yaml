@@ -91,6 +91,11 @@ input_number:
     min: 1
     max: 10
     step: 1
+  varmtvannsbereder_forrige_prioritet:
+    name: "Berederens forrige prioritet"
+    min: 1
+    max: 10
+    step: 1
   varmekabler_prioritet:
     name: "Varmekabler prioritet"
     min: 1
@@ -132,7 +137,7 @@ input_number:
     name: "Grense effektforbruk [W]"
     min: 0
     max: 14000
-    step: 1
+    step: 100
 
 input_boolean:
   varmekabler_paa:

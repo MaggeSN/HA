@@ -92,7 +92,6 @@
                   "entity": "input_number.grense_effektforbruk_simulering"
                 }
               ],
-              "title": "Simulering konstant verdi",
               "show_header_toggle": true,
               "state_color": true,
               "footer": {
@@ -111,7 +110,8 @@
                     }
                   }
                 ]
-              }
+              },
+              "title": "Enkel simulering"
             },
             {
               "type": "entities",

@@ -106,7 +106,7 @@
       state: "{{ states('input_number.neste_maksgrense_simulering') }}"
       unit_of_measurement: "W"
 
-    #For simulasjon (Tar ikke input_number.na_forbruk_hvert_2_min i betraktning):
+    #For simulasjon (Tar ikke effektforbruket i hjemmet i betraktning):
     - name: "Effektforbruk simulerte enheter"
       unit_of_measurement: "W"
       state: >
@@ -135,7 +135,7 @@
         {%endif%}
         {{ns.power}}
 
-      # For simulering (Tar input_number.na_forbruk_hvert_2_min i betraktning)
+      # For simulering (Tar effektforbruket i hjemmet i betraktning)
     - name: "Nåværende effektforbruk"
       unit_of_measurement: "W"
       state: >

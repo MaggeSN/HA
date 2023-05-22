@@ -1,104 +1,3 @@
-- id: '1677938667629'
-  alias: New Automation
-  description: ''
-  trigger:
-  - type: motion
-    platform: device
-    device_id: 1c14776119d24c73692b683435908588
-    entity_id: binary_sensor.motion_sensor_motion_detection
-    domain: binary_sensor
-  condition: []
-  action:
-  - device_id: 14d5b34e64ef6af2763a2031a77c52a8
-    domain: mobile_app
-    type: notify
-    message: Fuck you motherfucker
-  mode: single
-- id: '1678979948690'
-  alias: skru på vannkoker
-  description: ''
-  trigger:
-  - type: temperature
-    platform: device
-    device_id: 82efa66a4b9207f278aaf7f83370c18c
-    entity_id: sensor.smart_implant_air_temperature_8
-    domain: sensor
-    below: 40
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
-  condition: []
-  action:
-  - type: turn_on
-    device_id: bbf2dd57b37678cb53cbf22163212d57
-    entity_id: switch.metered_wall_plug_switch
-    domain: switch
-  mode: single
-- id: '1678980067943'
-  alias: skru av vannkoker
-  description: ''
-  trigger:
-  - type: temperature
-    platform: device
-    device_id: 82efa66a4b9207f278aaf7f83370c18c
-    entity_id: sensor.smart_implant_air_temperature_8
-    domain: sensor
-    above: 60
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
-  condition: []
-  action:
-  - type: turn_off
-    device_id: bbf2dd57b37678cb53cbf22163212d57
-    entity_id: switch.metered_wall_plug_switch
-    domain: switch
-  mode: single
-- id: '1682620281661'
-  alias: Energy Control
-  description: Runs every time HAN sensor updates consumption [W]
-  trigger:
-  - platform: time_pattern
-    minutes: /2
-  condition:
-  - condition: numeric_state
-    entity_id: input_number.current_check
-    below: 29
-  action:
-  - service: python_script.energy_control
-    data: {}
-  mode: single
-- id: '1682630229148'
-  alias: Energy Control Initial
-  description: Initial automation to start the other automation
-  trigger:
-  - platform: time_pattern
-    minutes: '00'
-    seconds: '00'
-  condition: []
-  action:
-  - service: automation.turn_off
-    data:
-      stop_actions: true
-    target:
-      entity_id: automation.energy_control
-  - service: input_number.set_value
-    data:
-      value: 0
-    target:
-      entity_id: input_number.energy_sum
-  - service: input_number.set_value
-    data:
-      value: 0
-    target:
-      entity_id: input_number.current_check
-  - service: automation.turn_on
-    data: {}
-    target:
-      entity_id: automation.energy_control
-  mode: single
 - id: '1683458045148'
   alias: 'Bereder: Temp faller under 70 celcius '
   description: ''
@@ -116,13 +15,19 @@
   action:
   - service: input_number.set_value
     data:
+      value: '{{ int(states(''input_number.varmtvannsbereder_prioritet'')) }}'
+    target:
+      entity_id: input_number.varmtvannsbereder_forrige_prioritet
+  - service: input_number.set_value
+    data:
       value: 8
     target:
-      entity_id: input_number.water_heater_priority
+      entity_id: input_number.varmtvannsbereder_prioritet
   - if:
-    - condition: state
-      state: 'on'
-      entity_id: binary_sensor.billigste_fire_timer
+    - condition: numeric_state
+      entity_id: sensor.hvor_mange_timer_til_neste_billigste_time
+      below: 3
+      above: -1
     then:
     - type: turn_on
       device_id: bbf2dd57b37678cb53cbf22163212d57
@@ -169,27 +74,19 @@
     device_id: 293f569974fe30c80ede718ca919552b
     entity_id: sensor.smart_implant_air_temperature_8
     domain: sensor
-    above: 75
+    above: 74
   condition: []
   action:
   - type: turn_off
     device_id: bbf2dd57b37678cb53cbf22163212d57
     entity_id: switch.metered_wall_plug_switch
     domain: switch
-  mode: single
-- id: '1683546726524'
-  description: ''
-  trigger:
-  - platform: geo_location
-    source: Magnuss iPhone
-    zone: zone.home
-    event: enter
-  condition: []
-  action:
-  - device_id: 14d5b34e64ef6af2763a2031a77c52a8
-    domain: mobile_app
-    type: notify
-    message: Magnus incoming
+  - service: input_number.set_value
+    data:
+      value: '{{ int(states(''input_number.varmtvannsbereder_forrige_prioritet''))
+        }}'
+    target:
+      entity_id: input_number.varmtvannsbereder_prioritet
   mode: single
 - id: '1683556315823'
   alias: 'Skru på enheter (SIMULERING: /3 min)'
